@@ -22,13 +22,13 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore Boilerplate.slnx
+        run: dotnet restore Nexus.slnx
 
       - name: Build
-        run: dotnet build Boilerplate.slnx --no-restore --configuration Release
+        run: dotnet build Nexus.slnx --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test Boilerplate.slnx --no-build --configuration Release --verbosity normal
+        run: dotnet test Nexus.slnx --no-build --configuration Release --verbosity normal
 
   frontend:
     name: Frontend (React)

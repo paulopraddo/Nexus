@@ -1,17 +1,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY Boilerplate.Domain/Boilerplate.Domain.csproj Boilerplate.Domain/
-COPY Boilerplate.Application/Boilerplate.Application.csproj Boilerplate.Application/
-COPY Boilerplate.Infrastructure/Boilerplate.Infrastructure.csproj Boilerplate.Infrastructure/
-COPY Boilerplate.API/Boilerplate.API.csproj Boilerplate.API/
-RUN dotnet restore Boilerplate.API/Boilerplate.API.csproj
+COPY Nexus.Domain/Nexus.Domain.csproj Nexus.Domain/
+COPY Nexus.Application/Nexus.Application.csproj Nexus.Application/
+COPY Nexus.Infrastructure/Nexus.Infrastructure.csproj Nexus.Infrastructure/
+COPY Nexus.API/Nexus.API.csproj Nexus.API/
+RUN dotnet restore Nexus.API/Nexus.API.csproj
 
 COPY . .
-RUN dotnet publish Boilerplate.API/Boilerplate.API.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish Nexus.API/Nexus.API.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-ENTRYPOINT ["dotnet", "Boilerplate.API.dll"]
+ENTRYPOINT ["dotnet", "Nexus.API.dll"]

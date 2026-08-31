@@ -1,6 +1,6 @@
-# Boilerplate
+# Nexus
 
-Boilerplate full-stack para iniciar novos projetos rapidamente: backend em .NET com Clean Architecture + DDD e frontend em React/Vite. Já vem com um módulo de autenticação completo e funcional (registro, login, verificação de e-mail, esqueci/redefinir senha, JWT) servindo como exemplo de como estruturar qualquer outro módulo do domínio.
+Backend em .NET com Clean Architecture + DDD e frontend em React/Vite. Já vem com um módulo de autenticação completo e funcional (registro, login, verificação de e-mail, esqueci/redefinir senha, JWT) servindo como exemplo de como estruturar qualquer outro módulo do domínio.
 
 - **Backend**: .NET 10, Clean Architecture + DDD, CQRS com MediatR, EF Core + PostgreSQL, JWT.
 - **Frontend**: React 19 + Vite + TypeScript.
@@ -9,11 +9,11 @@ Boilerplate full-stack para iniciar novos projetos rapidamente: backend em .NET 
 
 ```
 backend/
-  Boilerplate.API/             # Controllers, Program.cs, configuração HTTP
-  Boilerplate.Application/     # Casos de uso (CQRS: Commands/Queries + Handlers)
-  Boilerplate.Domain/          # Entidades, value objects, interfaces de repositório
-  Boilerplate.Infrastructure/  # EF Core, repositórios, JWT, hashing, envio de e-mail
-  Boilerplate.Tests/           # Testes de unidade (Domain + Application)
+  Nexus.API/             # Controllers, Program.cs, configuração HTTP
+  Nexus.Application/     # Casos de uso (CQRS: Commands/Queries + Handlers)
+  Nexus.Domain/          # Entidades, value objects, interfaces de repositório
+  Nexus.Infrastructure/  # EF Core, repositórios, JWT, hashing, envio de e-mail
+  Nexus.Tests/           # Testes de unidade (Domain + Application)
 frontend/
   src/
     components/                # ErrorBoundary, RequireAuth
@@ -38,22 +38,22 @@ O módulo `Users`/`Auth` percorre as quatro camadas do backend (Domain → Appli
 docker compose up -d
 ```
 
-Sobe um PostgreSQL em `localhost:5432` (db `boilerplate`, usuário/senha `postgres`).
+Sobe um PostgreSQL em `localhost:5432` (db `nexus`, usuário/senha `postgres`).
 
 ### 2. Backend
 
-> **Importante:** este boilerplate não inclui migrations do EF Core (foram removidas junto com o domínio de exemplo original). Antes do primeiro `dotnet run`, configure a connection string em `appsettings.Development.json` (ou variável de ambiente) e gere a migration inicial:
+> **Importante:** o projeto não inclui migrations do EF Core (foram removidas junto com o domínio de exemplo original). Antes do primeiro `dotnet run`, configure a connection string em `appsettings.Development.json` (ou variável de ambiente) e gere a migration inicial:
 >
 > ```bash
 > cd backend
-> dotnet ef migrations add InitialCreate --project Boilerplate.Infrastructure --startup-project Boilerplate.API
+> dotnet ef migrations add InitialCreate --project Nexus.Infrastructure --startup-project Nexus.API
 > ```
 >
 > Se o `dotnet-ef` não estiver instalado: `dotnet tool install --global dotnet-ef`.
 
 ```bash
 cd backend
-dotnet run --project Boilerplate.API
+dotnet run --project Nexus.API
 ```
 
 A API sobe em `http://localhost:5225` (porta definida em `Properties/launchSettings.json`). As migrations pendentes são aplicadas automaticamente ao iniciar (`Program.cs` chama `dbContext.Database.MigrateAsync()`).
@@ -75,7 +75,7 @@ A aplicação sobe em `http://localhost:5173` e usa `VITE_API_URL` para apontar 
 ```bash
 # Backend
 cd backend
-dotnet test Boilerplate.slnx
+dotnet test Nexus.slnx
 
 # Frontend
 cd frontend
@@ -88,11 +88,11 @@ Lint do frontend: `npm run lint` (oxlint).
 
 ## Variáveis de ambiente (backend)
 
-Configuráveis via `appsettings.json` / `appsettings.Development.json` ou variáveis de ambiente (`ConnectionStrings__Boilerplate`, `Jwt__Secret`, etc.).
+Configuráveis via `appsettings.json` / `appsettings.Development.json` ou variáveis de ambiente (`ConnectionStrings__Nexus`, `Jwt__Secret`, etc.).
 
 | Chave | Descrição |
 |---|---|
-| `ConnectionStrings:Boilerplate` | Connection string do PostgreSQL. |
+| `ConnectionStrings:Nexus` | Connection string do PostgreSQL. |
 | `Jwt:Issuer` / `Jwt:Audience` | Issuer/audience do token JWT. |
 | `Jwt:Secret` | Chave simétrica usada para assinar os JWTs. **Trocar em produção.** |
 | `Jwt:ExpirationMinutes` | Validade do token, em minutos. |
@@ -124,9 +124,9 @@ A API limita requisições por IP: 100 req/min globalmente e 10 req/min nos endp
 
 Workflow em [`.github/workflows/ci.yml`](.github/workflows/ci.yml) builda e testa backend e frontend em cada push/PR para `main`.
 
-## O que este boilerplate NÃO inclui de propósito
+## O que este projeto NÃO inclui de propósito (ainda)
 
-Este é um ponto de partida, não um produto pronto. Antes de aceitar usuários reais em produção, considere adicionar:
+Antes de aceitar usuários reais em produção, considere adicionar:
 
 - Observabilidade (logging estruturado, métricas, error tracking).
 - Refresh token / revogação de sessão para o JWT.

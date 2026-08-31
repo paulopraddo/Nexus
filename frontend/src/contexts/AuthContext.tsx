@@ -18,7 +18,7 @@ interface AuthContextValue {
   logout: () => void
 }
 
-const STORAGE_KEY = 'boilerplate:auth'
+const STORAGE_KEY = 'nexus:auth'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 

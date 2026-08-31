@@ -22,7 +22,7 @@ describe('AuthContext', () => {
   })
 
   it('restaura o usuário do localStorage ao montar', () => {
-    localStorage.setItem('boilerplate:auth', JSON.stringify({ userId: '1', username: 'joao', token: 'tok' }))
+    localStorage.setItem('nexus:auth', JSON.stringify({ userId: '1', username: 'joao', token: 'tok' }))
 
     const { result } = renderAuth()
 
@@ -38,7 +38,7 @@ describe('AuthContext', () => {
     })
 
     expect(result.current.user).toEqual({ userId: '1', username: 'joao', token: 'tok' })
-    expect(JSON.parse(localStorage.getItem('boilerplate:auth')!)).toEqual({
+    expect(JSON.parse(localStorage.getItem('nexus:auth')!)).toEqual({
       userId: '1',
       username: 'joao',
       token: 'tok',
@@ -122,6 +122,6 @@ describe('AuthContext', () => {
     })
 
     expect(result.current.user).toBeNull()
-    expect(localStorage.getItem('boilerplate:auth')).toBeNull()
+    expect(localStorage.getItem('nexus:auth')).toBeNull()
   })
 })
