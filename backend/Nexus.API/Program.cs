@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Scalar.AspNetCore;
 using Nexus.API;
 using Nexus.Application;
 using Nexus.Infrastructure;
@@ -84,6 +85,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseExceptionHandler();
