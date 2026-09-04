@@ -1,6 +1,7 @@
 using System.Text;
 using Nexus.Application.Common;
 using Nexus.Domain.Boards;
+using Nexus.Domain.Cards;
 using Nexus.Domain.Common;
 using Nexus.Domain.Users;
 using Nexus.Domain.Workspaces;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
         services.AddScoped<IBoardRepository, BoardRepository>();
+        services.AddScoped<ICardRepository, CardRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
