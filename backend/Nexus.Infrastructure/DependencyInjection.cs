@@ -1,7 +1,9 @@
 using System.Text;
 using Nexus.Application.Common;
+using Nexus.Domain.Boards;
 using Nexus.Domain.Common;
 using Nexus.Domain.Users;
+using Nexus.Domain.Workspaces;
 using Nexus.Infrastructure.Emailing;
 using Nexus.Infrastructure.Persistence;
 using Nexus.Infrastructure.Persistence.Repositories;
@@ -24,6 +26,8 @@ public static class DependencyInjection
         services.AddDbContext<NexusDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+        services.AddScoped<IBoardRepository, BoardRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
