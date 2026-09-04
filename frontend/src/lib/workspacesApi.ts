@@ -48,3 +48,26 @@ export function renameBoard(boardId: string, name: string): Promise<BoardRespons
 export function deleteBoard(boardId: string): Promise<void> {
   return request<void>(`/api/boards/${boardId}`, { method: 'DELETE' })
 }
+
+export interface CardResponse {
+  id: string
+  title: string
+  boardId: string
+  createdAt: string
+}
+
+export function listCards(boardId: string): Promise<CardResponse[]> {
+  return request<CardResponse[]>(`/api/boards/${boardId}/cards`, { method: 'GET' })
+}
+
+export function createCard(boardId: string, title: string): Promise<CardResponse> {
+  return request<CardResponse>(`/api/boards/${boardId}/cards`, { method: 'POST', body: { title } })
+}
+
+export function renameCard(cardId: string, title: string): Promise<CardResponse> {
+  return request<CardResponse>(`/api/cards/${cardId}`, { method: 'PUT', body: { title } })
+}
+
+export function deleteCard(cardId: string): Promise<void> {
+  return request<void>(`/api/cards/${cardId}`, { method: 'DELETE' })
+}

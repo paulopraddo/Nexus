@@ -138,7 +138,7 @@ function WorkspacePage() {
         <ul className="card-list">
           {boards.map((board) => (
             <li key={board.id}>
-              <span className="card-name">{board.name}</span>
+              <Link to={`/workspaces/${workspaceId}/boards/${board.id}`}>{board.name}</Link>
               <div className="card-actions">
                 <button type="button" onClick={() => handleRenameBoard(board)}>
                   Renomear

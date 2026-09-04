@@ -1,4 +1,5 @@
 using Nexus.Domain.Boards;
+using Nexus.Domain.Cards;
 using Nexus.Domain.Users;
 using Nexus.Domain.Workspaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ public sealed class NexusDbContext(DbContextOptions<NexusDbContext> options) : D
     public DbSet<User> Users => Set<User>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<Board> Boards => Set<Board>();
+    public DbSet<Card> Cards => Set<Card>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

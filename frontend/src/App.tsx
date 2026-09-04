@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import RequireAuth from './components/RequireAuth'
+import BoardPage from './pages/BoardPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -18,6 +19,7 @@ function App() {
       <Route element={<RequireAuth />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/workspaces/:workspaceId" element={<WorkspacePage />} />
+        <Route path="/workspaces/:workspaceId/boards/:boardId" element={<BoardPage />} />
       </Route>
     </Routes>
   )
