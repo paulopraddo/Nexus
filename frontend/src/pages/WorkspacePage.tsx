@@ -1,35 +1,47 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import {
   createBoard,
   deleteBoard,
   deleteWorkspace,
   getWorkspace,
+  inviteWorkspaceMember,
   listBoards,
+  listWorkspaceMembers,
+  removeWorkspaceMember,
   renameBoard,
   type BoardResponse,
+  type WorkspaceMemberResponse,
   type WorkspaceResponse,
 } from '../lib/workspacesApi'
 
 function WorkspacePage() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null)
   const [boards, setBoards] = useState<BoardResponse[]>([])
+  const [members, setMembers] = useState<WorkspaceMemberResponse[]>([])
   const [name, setName] = useState('')
+  const [inviteEmail, setInviteEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isInviting, setIsInviting] = useState(false)
+
+  const isOwner = workspace?.ownerId === user?.userId
 
   useEffect(() => {
     if (!workspaceId) {
       return
     }
 
-    Promise.all([getWorkspace(workspaceId), listBoards(workspaceId)])
-      .then(([workspaceResult, boardsResult]) => {
+    Promise.all([getWorkspace(workspaceId), listBoards(workspaceId), listWorkspaceMembers(workspaceId)])
+      .then(([workspaceResult, boardsResult, membersResult]) => {
         setWorkspace(workspaceResult)
         setBoards(boardsResult)
+        setMembers(membersResult)
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Falha ao carregar workspace.'))
       .finally(() => setIsLoading(false))
@@ -94,6 +106,39 @@ function WorkspacePage() {
     }
   }
 
+  async function handleInviteMember(event: React.FormEvent) {
+    event.preventDefault()
+    if (!workspaceId) {
+      return
+    }
+    setError(null)
+    setIsInviting(true)
+
+    try {
+      const member = await inviteWorkspaceMember(workspaceId, inviteEmail)
+      setMembers((current) => [...current, member])
+      setInviteEmail('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Falha ao convidar membro.')
+    } finally {
+      setIsInviting(false)
+    }
+  }
+
+  async function handleRemoveMember(userId: string) {
+    if (!workspaceId) {
+      return
+    }
+    setError(null)
+
+    try {
+      await removeWorkspaceMember(workspaceId, userId)
+      setMembers((current) => current.filter((m) => m.userId !== userId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Falha ao remover membro.')
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="page">
@@ -117,9 +162,11 @@ function WorkspacePage() {
         <h1>{workspace.name}</h1>
         <div className="card-actions">
           <Link to="/">Voltar</Link>
-          <button type="button" onClick={handleDeleteWorkspace}>
-            Excluir workspace
-          </button>
+          {isOwner && (
+            <button type="button" onClick={handleDeleteWorkspace}>
+              Excluir workspace
+            </button>
+          )}
         </div>
       </div>
 
@@ -151,6 +198,40 @@ function WorkspacePage() {
           ))}
         </ul>
       )}
+
+      <h2>Membros</h2>
+
+      {isOwner && (
+        <form className="inline-form" onSubmit={handleInviteMember}>
+          <input
+            type="email"
+            placeholder="E-mail de um usuário cadastrado"
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            required
+          />
+          <button type="submit" disabled={isInviting}>
+            {isInviting ? 'Convidando...' : 'Convidar'}
+          </button>
+        </form>
+      )}
+
+      <ul className="card-list">
+        {members.map((member) => (
+          <li key={member.userId}>
+            <span className="card-name">
+              {member.username} {member.userId === workspace.ownerId && '(dono)'}
+            </span>
+            {isOwner && member.userId !== workspace.ownerId && (
+              <div className="card-actions">
+                <button type="button" onClick={() => handleRemoveMember(member.userId)}>
+                  Remover
+                </button>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

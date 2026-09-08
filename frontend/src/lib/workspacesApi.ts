@@ -3,6 +3,7 @@ import { request } from './api'
 export interface WorkspaceResponse {
   id: string
   name: string
+  ownerId: string
   createdAt: string
 }
 
@@ -47,6 +48,25 @@ export function renameBoard(boardId: string, name: string): Promise<BoardRespons
 
 export function deleteBoard(boardId: string): Promise<void> {
   return request<void>(`/api/boards/${boardId}`, { method: 'DELETE' })
+}
+
+export interface WorkspaceMemberResponse {
+  userId: string
+  username: string
+  email: string
+  joinedAt: string
+}
+
+export function listWorkspaceMembers(workspaceId: string): Promise<WorkspaceMemberResponse[]> {
+  return request<WorkspaceMemberResponse[]>(`/api/workspaces/${workspaceId}/members`, { method: 'GET' })
+}
+
+export function inviteWorkspaceMember(workspaceId: string, email: string): Promise<WorkspaceMemberResponse> {
+  return request<WorkspaceMemberResponse>(`/api/workspaces/${workspaceId}/members`, { method: 'POST', body: { email } })
+}
+
+export function removeWorkspaceMember(workspaceId: string, userId: string): Promise<void> {
+  return request<void>(`/api/workspaces/${workspaceId}/members/${userId}`, { method: 'DELETE' })
 }
 
 export interface CardResponse {
