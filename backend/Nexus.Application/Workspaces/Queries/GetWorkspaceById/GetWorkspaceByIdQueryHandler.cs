@@ -18,6 +18,6 @@ public sealed class GetWorkspaceByIdQueryHandler(IWorkspaceRepository workspaceR
             return Result.Fail<WorkspaceResult>("Workspace não encontrado.");
         }
 
-        return Result.Ok(new WorkspaceResult(workspace.Id, workspace.Name.Value, workspace.CreatedAt));
+        return Result.Ok(new WorkspaceResult(workspace.Id, workspace.Name.Value, workspace.OwnerId, workspace.CreatedAt));
     }
 }

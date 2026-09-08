@@ -21,7 +21,7 @@ public sealed class GetWorkspacesQueryHandler(IWorkspaceRepository workspaceRepo
 
         IReadOnlyCollection<WorkspaceResult> result = ownedWorkspaces
             .Concat(memberWorkspaces)
-            .Select(w => new WorkspaceResult(w.Id, w.Name.Value, w.CreatedAt))
+            .Select(w => new WorkspaceResult(w.Id, w.Name.Value, w.OwnerId, w.CreatedAt))
             .ToList();
 
         return Result.Ok(result);
