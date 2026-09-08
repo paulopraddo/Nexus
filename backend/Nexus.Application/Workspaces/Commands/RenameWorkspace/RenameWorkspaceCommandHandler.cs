@@ -28,6 +28,6 @@ public sealed class RenameWorkspaceCommandHandler(IWorkspaceRepository workspace
         workspace.Rename(nameResult.Value);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Ok(new WorkspaceResult(workspace.Id, workspace.Name.Value, workspace.CreatedAt));
+        return Result.Ok(new WorkspaceResult(workspace.Id, workspace.Name.Value, workspace.OwnerId, workspace.CreatedAt));
     }
 }

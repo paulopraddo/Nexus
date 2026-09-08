@@ -1,6 +1,6 @@
+using Nexus.Application.Common;
 using Nexus.Domain.Boards;
 using Nexus.Domain.Common;
-using Nexus.Domain.Workspaces;
 using FluentResults;
 using MediatR;
 
@@ -8,7 +8,7 @@ namespace Nexus.Application.Boards.Commands.DeleteBoard;
 
 public sealed class DeleteBoardCommandHandler(
     IBoardRepository boardRepository,
-    IWorkspaceRepository workspaceRepository,
+    IWorkspaceAccessService workspaceAccessService,
     IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteBoardCommand, Result>
 {
@@ -16,14 +16,8 @@ public sealed class DeleteBoardCommandHandler(
     {
         var board = await boardRepository.GetByIdAsync(request.BoardId, cancellationToken);
 
-        if (board is null)
-        {
-            return Result.Fail("Board não encontrado.");
-        }
-
-        var workspace = await workspaceRepository.GetByIdAsync(board.WorkspaceId, cancellationToken);
-
-        if (workspace is null || !workspace.IsOwnedBy(request.CurrentUserId))
+        if (board is null
+            || !await workspaceAccessService.HasAccessAsync(board.WorkspaceId, request.CurrentUserId, cancellationToken))
         {
             return Result.Fail("Board não encontrado.");
         }

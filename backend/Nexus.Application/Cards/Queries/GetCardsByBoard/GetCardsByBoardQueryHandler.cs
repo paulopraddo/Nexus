@@ -1,7 +1,6 @@
 using Nexus.Application.Common;
 using Nexus.Domain.Boards;
 using Nexus.Domain.Cards;
-using Nexus.Domain.Workspaces;
 using FluentResults;
 using MediatR;
 
@@ -9,7 +8,7 @@ namespace Nexus.Application.Cards.Queries.GetCardsByBoard;
 
 public sealed class GetCardsByBoardQueryHandler(
     IBoardRepository boardRepository,
-    IWorkspaceRepository workspaceRepository,
+    IWorkspaceAccessService workspaceAccessService,
     ICardRepository cardRepository)
     : IRequestHandler<GetCardsByBoardQuery, Result<IReadOnlyCollection<CardResult>>>
 {
@@ -18,14 +17,8 @@ public sealed class GetCardsByBoardQueryHandler(
     {
         var board = await boardRepository.GetByIdAsync(request.BoardId, cancellationToken);
 
-        if (board is null)
-        {
-            return Result.Fail<IReadOnlyCollection<CardResult>>("Board não encontrado.");
-        }
-
-        var workspace = await workspaceRepository.GetByIdAsync(board.WorkspaceId, cancellationToken);
-
-        if (workspace is null || !workspace.IsOwnedBy(request.CurrentUserId))
+        if (board is null
+            || !await workspaceAccessService.HasAccessAsync(board.WorkspaceId, request.CurrentUserId, cancellationToken))
         {
             return Result.Fail<IReadOnlyCollection<CardResult>>("Board não encontrado.");
         }

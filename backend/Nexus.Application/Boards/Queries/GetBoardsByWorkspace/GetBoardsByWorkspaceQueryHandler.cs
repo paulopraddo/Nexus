@@ -1,22 +1,19 @@
 using Nexus.Application.Common;
 using Nexus.Domain.Boards;
-using Nexus.Domain.Workspaces;
 using FluentResults;
 using MediatR;
 
 namespace Nexus.Application.Boards.Queries.GetBoardsByWorkspace;
 
 public sealed class GetBoardsByWorkspaceQueryHandler(
-    IWorkspaceRepository workspaceRepository,
+    IWorkspaceAccessService workspaceAccessService,
     IBoardRepository boardRepository)
     : IRequestHandler<GetBoardsByWorkspaceQuery, Result<IReadOnlyCollection<BoardResult>>>
 {
     public async Task<Result<IReadOnlyCollection<BoardResult>>> Handle(
         GetBoardsByWorkspaceQuery request, CancellationToken cancellationToken)
     {
-        var workspace = await workspaceRepository.GetByIdAsync(request.WorkspaceId, cancellationToken);
-
-        if (workspace is null || !workspace.IsOwnedBy(request.CurrentUserId))
+        if (!await workspaceAccessService.HasAccessAsync(request.WorkspaceId, request.CurrentUserId, cancellationToken))
         {
             return Result.Fail<IReadOnlyCollection<BoardResult>>("Workspace não encontrado.");
         }

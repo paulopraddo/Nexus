@@ -2,7 +2,6 @@ using Nexus.Application.Common;
 using Nexus.Domain.Boards;
 using Nexus.Domain.Cards;
 using Nexus.Domain.Common;
-using Nexus.Domain.Workspaces;
 using FluentResults;
 using MediatR;
 
@@ -10,7 +9,7 @@ namespace Nexus.Application.Cards.Commands.CreateCard;
 
 public sealed class CreateCardCommandHandler(
     IBoardRepository boardRepository,
-    IWorkspaceRepository workspaceRepository,
+    IWorkspaceAccessService workspaceAccessService,
     ICardRepository cardRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<CreateCardCommand, Result<CardResult>>
@@ -19,7 +18,8 @@ public sealed class CreateCardCommandHandler(
     {
         var board = await boardRepository.GetByIdAsync(request.BoardId, cancellationToken);
 
-        if (board is null || !await IsOwnedByCurrentUserAsync(board.WorkspaceId, request.CurrentUserId, cancellationToken))
+        if (board is null
+            || !await workspaceAccessService.HasAccessAsync(board.WorkspaceId, request.CurrentUserId, cancellationToken))
         {
             return Result.Fail<CardResult>("Board não encontrado.");
         }
@@ -37,11 +37,5 @@ public sealed class CreateCardCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Ok(new CardResult(card.Id, card.Title.Value, card.BoardId, card.CreatedAt));
-    }
-
-    private async Task<bool> IsOwnedByCurrentUserAsync(Guid workspaceId, Guid currentUserId, CancellationToken cancellationToken)
-    {
-        var workspace = await workspaceRepository.GetByIdAsync(workspaceId, cancellationToken);
-        return workspace is not null && workspace.IsOwnedBy(currentUserId);
     }
 }

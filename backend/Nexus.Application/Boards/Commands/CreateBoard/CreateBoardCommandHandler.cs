@@ -10,6 +10,7 @@ namespace Nexus.Application.Boards.Commands.CreateBoard;
 public sealed class CreateBoardCommandHandler(
     IWorkspaceRepository workspaceRepository,
     IBoardRepository boardRepository,
+    IWorkspaceAccessService workspaceAccessService,
     IUnitOfWork unitOfWork)
     : IRequestHandler<CreateBoardCommand, Result<BoardResult>>
 {
@@ -17,7 +18,8 @@ public sealed class CreateBoardCommandHandler(
     {
         var workspace = await workspaceRepository.GetByIdAsync(request.WorkspaceId, cancellationToken);
 
-        if (workspace is null || !workspace.IsOwnedBy(request.CurrentUserId))
+        if (workspace is null
+            || !await workspaceAccessService.HasAccessAsync(workspace.Id, request.CurrentUserId, cancellationToken))
         {
             return Result.Fail<BoardResult>("Workspace não encontrado.");
         }

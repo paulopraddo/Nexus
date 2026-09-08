@@ -1,43 +1,43 @@
 using Nexus.Application.Boards.Queries.GetBoardsByWorkspace;
+using Nexus.Application.Common;
 using Nexus.Domain.Boards;
-using Nexus.Domain.Workspaces;
 using Moq;
 
 namespace Nexus.Tests.Application.Boards;
 
 public class GetBoardsByWorkspaceQueryHandlerTests
 {
-    private readonly Mock<IWorkspaceRepository> _workspaceRepository = new();
+    private readonly Mock<IWorkspaceAccessService> _workspaceAccessService = new();
     private readonly Mock<IBoardRepository> _boardRepository = new();
 
     private GetBoardsByWorkspaceQueryHandler CreateHandler() =>
-        new(_workspaceRepository.Object, _boardRepository.Object);
+        new(_workspaceAccessService.Object, _boardRepository.Object);
 
     [Fact]
-    public async Task Handle_QuandoDono_RetornaBoardsDoWorkspace()
+    public async Task Handle_QuandoTemAcesso_RetornaBoardsDoWorkspace()
     {
-        var ownerId = Guid.NewGuid();
-        var workspace = Workspace.Create(WorkspaceName.Create("Time").Value, ownerId).Value;
-        var board = Board.Create(BoardName.Create("Sprint 1").Value, workspace.Id).Value;
-        _workspaceRepository.Setup(r => r.GetByIdAsync(workspace.Id, It.IsAny<CancellationToken>())).ReturnsAsync(workspace);
-        _boardRepository.Setup(r => r.GetByWorkspaceIdAsync(workspace.Id, It.IsAny<CancellationToken>()))
+        var workspaceId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var board = Board.Create(BoardName.Create("Sprint 1").Value, workspaceId).Value;
+        _workspaceAccessService.Setup(s => s.HasAccessAsync(workspaceId, userId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _boardRepository.Setup(r => r.GetByWorkspaceIdAsync(workspaceId, It.IsAny<CancellationToken>()))
             .ReturnsAsync([board]);
 
         var result = await CreateHandler().Handle(
-            new GetBoardsByWorkspaceQuery(workspace.Id, ownerId), CancellationToken.None);
+            new GetBoardsByWorkspaceQuery(workspaceId, userId), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Single(result.Value);
     }
 
     [Fact]
-    public async Task Handle_QuandoNaoEDono_RetornaFalha()
+    public async Task Handle_QuandoNaoTemAcesso_RetornaFalha()
     {
-        var workspace = Workspace.Create(WorkspaceName.Create("Time").Value, Guid.NewGuid()).Value;
-        _workspaceRepository.Setup(r => r.GetByIdAsync(workspace.Id, It.IsAny<CancellationToken>())).ReturnsAsync(workspace);
+        var workspaceId = Guid.NewGuid();
+        _workspaceAccessService.Setup(s => s.HasAccessAsync(workspaceId, It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await CreateHandler().Handle(
-            new GetBoardsByWorkspaceQuery(workspace.Id, Guid.NewGuid()), CancellationToken.None);
+            new GetBoardsByWorkspaceQuery(workspaceId, Guid.NewGuid()), CancellationToken.None);
 
         Assert.True(result.IsFailed);
     }

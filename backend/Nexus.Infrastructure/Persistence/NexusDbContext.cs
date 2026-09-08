@@ -10,6 +10,7 @@ public sealed class NexusDbContext(DbContextOptions<NexusDbContext> options) : D
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
+    public DbSet<WorkspaceMember> WorkspaceMembers => Set<WorkspaceMember>();
     public DbSet<Board> Boards => Set<Board>();
     public DbSet<Card> Cards => Set<Card>();
 
