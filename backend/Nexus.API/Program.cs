@@ -97,7 +97,12 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-app.UseHttpsRedirection();
+// Em dev, o frontend chama a API via HTTP puro (ex.: http://localhost:5225); redirecionar para
+// HTTPS aqui quebra o preflight de CORS, já que a spec não permite redirect numa requisição OPTIONS.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors(FrontendCorsPolicy);
 
