@@ -6,6 +6,8 @@ public interface IWorkspaceRepository
 
     Task<IReadOnlyCollection<Workspace>> GetByOwnerIdAsync(Guid ownerId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<Workspace>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);
+
     Task AddAsync(Workspace workspace, CancellationToken cancellationToken = default);
 
     void Remove(Workspace workspace);

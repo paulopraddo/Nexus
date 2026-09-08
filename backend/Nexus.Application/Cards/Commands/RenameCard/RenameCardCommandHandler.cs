@@ -2,7 +2,6 @@ using Nexus.Application.Common;
 using Nexus.Domain.Boards;
 using Nexus.Domain.Cards;
 using Nexus.Domain.Common;
-using Nexus.Domain.Workspaces;
 using FluentResults;
 using MediatR;
 
@@ -11,7 +10,7 @@ namespace Nexus.Application.Cards.Commands.RenameCard;
 public sealed class RenameCardCommandHandler(
     ICardRepository cardRepository,
     IBoardRepository boardRepository,
-    IWorkspaceRepository workspaceRepository,
+    IWorkspaceAccessService workspaceAccessService,
     IUnitOfWork unitOfWork)
     : IRequestHandler<RenameCardCommand, Result<CardResult>>
 {
@@ -46,7 +45,6 @@ public sealed class RenameCardCommandHandler(
             return false;
         }
 
-        var workspace = await workspaceRepository.GetByIdAsync(board.WorkspaceId, cancellationToken);
-        return workspace is not null && workspace.IsOwnedBy(currentUserId);
+        return await workspaceAccessService.HasAccessAsync(board.WorkspaceId, currentUserId, cancellationToken);
     }
 }

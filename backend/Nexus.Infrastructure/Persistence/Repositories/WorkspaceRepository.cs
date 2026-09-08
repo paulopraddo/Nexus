@@ -12,6 +12,10 @@ public sealed class WorkspaceRepository(NexusDbContext dbContext) : IWorkspaceRe
         Guid ownerId, CancellationToken cancellationToken = default) =>
         await dbContext.Workspaces.Where(w => w.OwnerId == ownerId).ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyCollection<Workspace>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default) =>
+        await dbContext.Workspaces.Where(w => ids.Contains(w.Id)).ToListAsync(cancellationToken);
+
     public async Task AddAsync(Workspace workspace, CancellationToken cancellationToken = default) =>
         await dbContext.Workspaces.AddAsync(workspace, cancellationToken);
 

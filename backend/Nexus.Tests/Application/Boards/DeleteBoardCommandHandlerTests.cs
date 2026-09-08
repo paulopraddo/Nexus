@@ -1,7 +1,7 @@
 using Nexus.Application.Boards.Commands.DeleteBoard;
+using Nexus.Application.Common;
 using Nexus.Domain.Boards;
 using Nexus.Domain.Common;
-using Nexus.Domain.Workspaces;
 using Moq;
 
 namespace Nexus.Tests.Application.Boards;
@@ -9,34 +9,32 @@ namespace Nexus.Tests.Application.Boards;
 public class DeleteBoardCommandHandlerTests
 {
     private readonly Mock<IBoardRepository> _boardRepository = new();
-    private readonly Mock<IWorkspaceRepository> _workspaceRepository = new();
+    private readonly Mock<IWorkspaceAccessService> _workspaceAccessService = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private DeleteBoardCommandHandler CreateHandler() =>
-        new(_boardRepository.Object, _workspaceRepository.Object, _unitOfWork.Object);
+        new(_boardRepository.Object, _workspaceAccessService.Object, _unitOfWork.Object);
 
     [Fact]
-    public async Task Handle_QuandoDonoDoWorkspace_RemoveBoard()
+    public async Task Handle_QuandoTemAcessoAoWorkspace_RemoveBoard()
     {
-        var ownerId = Guid.NewGuid();
-        var workspace = Workspace.Create(WorkspaceName.Create("Time").Value, ownerId).Value;
-        var board = Board.Create(BoardName.Create("Sprint 1").Value, workspace.Id).Value;
+        var userId = Guid.NewGuid();
+        var board = Board.Create(BoardName.Create("Sprint 1").Value, Guid.NewGuid()).Value;
         _boardRepository.Setup(r => r.GetByIdAsync(board.Id, It.IsAny<CancellationToken>())).ReturnsAsync(board);
-        _workspaceRepository.Setup(r => r.GetByIdAsync(workspace.Id, It.IsAny<CancellationToken>())).ReturnsAsync(workspace);
+        _workspaceAccessService.Setup(s => s.HasAccessAsync(board.WorkspaceId, userId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-        var result = await CreateHandler().Handle(new DeleteBoardCommand(board.Id, ownerId), CancellationToken.None);
+        var result = await CreateHandler().Handle(new DeleteBoardCommand(board.Id, userId), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         _boardRepository.Verify(r => r.Remove(board), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_QuandoNaoEDonoDoWorkspace_RetornaFalhaSemRemover()
+    public async Task Handle_QuandoNaoTemAcessoAoWorkspace_RetornaFalhaSemRemover()
     {
-        var workspace = Workspace.Create(WorkspaceName.Create("Time").Value, Guid.NewGuid()).Value;
-        var board = Board.Create(BoardName.Create("Sprint 1").Value, workspace.Id).Value;
+        var board = Board.Create(BoardName.Create("Sprint 1").Value, Guid.NewGuid()).Value;
         _boardRepository.Setup(r => r.GetByIdAsync(board.Id, It.IsAny<CancellationToken>())).ReturnsAsync(board);
-        _workspaceRepository.Setup(r => r.GetByIdAsync(workspace.Id, It.IsAny<CancellationToken>())).ReturnsAsync(workspace);
+        _workspaceAccessService.Setup(s => s.HasAccessAsync(board.WorkspaceId, It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await CreateHandler().Handle(new DeleteBoardCommand(board.Id, Guid.NewGuid()), CancellationToken.None);
 

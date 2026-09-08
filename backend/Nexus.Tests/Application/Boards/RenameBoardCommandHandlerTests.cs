@@ -1,7 +1,7 @@
 using Nexus.Application.Boards.Commands.RenameBoard;
+using Nexus.Application.Common;
 using Nexus.Domain.Boards;
 using Nexus.Domain.Common;
-using Nexus.Domain.Workspaces;
 using Moq;
 
 namespace Nexus.Tests.Application.Boards;
@@ -9,35 +9,33 @@ namespace Nexus.Tests.Application.Boards;
 public class RenameBoardCommandHandlerTests
 {
     private readonly Mock<IBoardRepository> _boardRepository = new();
-    private readonly Mock<IWorkspaceRepository> _workspaceRepository = new();
+    private readonly Mock<IWorkspaceAccessService> _workspaceAccessService = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private RenameBoardCommandHandler CreateHandler() =>
-        new(_boardRepository.Object, _workspaceRepository.Object, _unitOfWork.Object);
+        new(_boardRepository.Object, _workspaceAccessService.Object, _unitOfWork.Object);
 
     [Fact]
-    public async Task Handle_QuandoDonoDoWorkspace_RenomeiaBoard()
+    public async Task Handle_QuandoTemAcessoAoWorkspace_RenomeiaBoard()
     {
-        var ownerId = Guid.NewGuid();
-        var workspace = Workspace.Create(WorkspaceName.Create("Time").Value, ownerId).Value;
-        var board = Board.Create(BoardName.Create("Sprint 1").Value, workspace.Id).Value;
+        var userId = Guid.NewGuid();
+        var board = Board.Create(BoardName.Create("Sprint 1").Value, Guid.NewGuid()).Value;
         _boardRepository.Setup(r => r.GetByIdAsync(board.Id, It.IsAny<CancellationToken>())).ReturnsAsync(board);
-        _workspaceRepository.Setup(r => r.GetByIdAsync(workspace.Id, It.IsAny<CancellationToken>())).ReturnsAsync(workspace);
+        _workspaceAccessService.Setup(s => s.HasAccessAsync(board.WorkspaceId, userId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await CreateHandler().Handle(
-            new RenameBoardCommand(board.Id, ownerId, "Sprint 2"), CancellationToken.None);
+            new RenameBoardCommand(board.Id, userId, "Sprint 2"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Sprint 2", result.Value.Name);
     }
 
     [Fact]
-    public async Task Handle_QuandoNaoEDonoDoWorkspace_RetornaFalha()
+    public async Task Handle_QuandoNaoTemAcessoAoWorkspace_RetornaFalha()
     {
-        var workspace = Workspace.Create(WorkspaceName.Create("Time").Value, Guid.NewGuid()).Value;
-        var board = Board.Create(BoardName.Create("Sprint 1").Value, workspace.Id).Value;
+        var board = Board.Create(BoardName.Create("Sprint 1").Value, Guid.NewGuid()).Value;
         _boardRepository.Setup(r => r.GetByIdAsync(board.Id, It.IsAny<CancellationToken>())).ReturnsAsync(board);
-        _workspaceRepository.Setup(r => r.GetByIdAsync(workspace.Id, It.IsAny<CancellationToken>())).ReturnsAsync(workspace);
+        _workspaceAccessService.Setup(s => s.HasAccessAsync(board.WorkspaceId, It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await CreateHandler().Handle(
             new RenameBoardCommand(board.Id, Guid.NewGuid(), "Sprint 2"), CancellationToken.None);
