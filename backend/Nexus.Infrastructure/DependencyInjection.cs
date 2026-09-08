@@ -28,6 +28,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+        services.AddScoped<IWorkspaceMemberRepository, WorkspaceMemberRepository>();
         services.AddScoped<IBoardRepository, BoardRepository>();
         services.AddScoped<ICardRepository, CardRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
